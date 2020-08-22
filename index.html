@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<!-- saved from url=(0173)https://static.platzi.com/media/tmp/class-files/git/FundamentosJSCurso/FundamentosJSCurso-1f00454290b0b712907f717d5c29df1aafae22b6/clase42%20-%20comenzando%20el%20juego.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <title>Simon Dice</title>
+    <style>
+      body {
+        margin: 0;
+        background: #dedede;
+        display: flex;
+        align-items: center;
+        height: 100vh;
+      }
+
+      .gameboard {
+        height: 100vh;
+        width: 100vh;
+        border-radius: 50%;
+        overflow: hidden;
+        margin: 0 auto;
+        max-height: 60vh;
+        max-width: 60vh;
+      }
+
+      .color {
+        width: 50%;
+        height: 50%;
+        display: inline-block;
+      }
+
+      .left {
+        float: left;
+      }
+
+      .right {
+        float: left;
+      }
+
+      .celeste {
+        background: #22a6b3;
+      }
+
+      .celeste.light {
+        background: #7ed6df;
+      }
+
+      .violeta {
+        background: #be2edd;
+      }
+
+      .violeta.light {
+        background: #e056fd;
+      }
+
+      .naranja {
+        background: #f0932b;
+      }
+
+      .naranja.light {
+        background: #ffbe76;
+      }
+
+      .verde {
+        background: #6ab04c;
+      }
+
+      .verde.light {
+        background: #badc58;
+      }
+
+      .btn-start {
+        width: 400px;
+        height: 100px;
+        background: #ecf0f1;
+        color: #2c3e50;
+        font-size: 2.5rem;
+        position: absolute;
+        top: calc(50% - 50px);
+        left: calc(50% - 200px);
+      }
+
+      .hide {
+        display: none;
+      }
+
+      /* para ponerle todo al codigo se usa el * */
+      *{
+        font-family: arial;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="gameboard">
+      <div id="celeste" class="color celeste left" data-color="celeste"></div>
+      <div id="violeta" class="color violeta right" data-color="violeta"></div>
+      <div id="naranja" class="color naranja left" data-color="naranja"></div>
+      <div id="verde" class="color verde right" data-color="verde"></div>
+      <button id="btnEmpezar" class="btn-start" onclick="empezarJuego()">Empezar a jugar!</button>
+    </div>
+    <!-- me llama una libreria con alertas muy bonitas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
+    <script>
+      const celeste = document.getElementById('celeste');
+      const violeta = document.getElementById('violeta');
+      const naranja = document.getElementById('naranja');
+      const verde = document.getElementById('verde');
+      const btnEmpezar = document.getElementById('btnEmpezar');
+      const Ultimo_Nivel = 10;
+
+      class Juego {
+        constructor() {
+            this.inicializar = this.inicializar.bind(this);
+            this.inicializar();
+            this.generarSecuencia();
+          setTimeout(() => {
+            this.siguienteNivel();
+          },500);
+        }
+
+        inicializar() {
+          // de esta manera la funcion siempre va a estar atada al contexto
+          //con el bind(this) 
+          this.siguienteNivel = this.siguienteNivel.bind(this);
+          this.elegirColor = this.elegirColor.bind(this);
+          -// el toggle es como un swich 
+          //significa prender y apagar
+          this.toggleBtnEmpezar();
+          // btnEmpezar.classList.add('hide');
+          this.nivel = 1;
+          this.colores = {
+              celeste: celeste,
+              violeta: violeta,
+              naranja: naranja,
+              verde: verde
+          }
+        }
+
+        toggleBtnEmpezar(){
+          //.contains metodo que nos dice si contiene lo que le decimos en el ('')
+          if(btnEmpezar.classList.contains('hide')){
+            //para quitar el hide y que nos aparezca el boton de empezar juego
+            btnEmpezar.classList.remove('hide');
+          }else{
+            btnEmpezar.classList.add('hide');
+          }
+        }
+
+        generarSecuencia(){
+            //otra forma de crear un vector de arrays
+            //lo llenamos de 0 mientras tanto con fill
+            // math.floor me redondea para abajo el numero si es 3.9 me lo deja en 3
+            this.secuencia = new Array(Ultimo_Nivel).fill(0).map(n => Math.floor(Math.random() * 4));
+        }
+
+        siguienteNivel(){
+            this.subnivel = 0;
+            this.iluminarSecuencia();
+            this.agregarEventosClick();
+        }
+
+        transformarNumeroAColor(numero){
+            switch (numero){
+                case 0:
+                    return 'celeste';
+                case 1: 
+                    return 'violeta';
+                case 2:
+                    return 'naranja';
+                case 3:
+                    return 'verde';
+            }
+        }
+
+        transformarColorANumero(color){
+            switch (color){
+                case 'celeste':
+                    return 0;
+                case 'violeta': 
+                    return 1;
+                case 'naranja':
+                    return 2;
+                case 'verde':
+                    return 3;
+            }
+        }
+
+        iluminarSecuencia(){
+            // para los for es mejor usar let que var
+            for(let i=0; i<this.nivel;i++){
+                // se pone let para que el color se mantenga en el bloque
+                // y no se acumule en esa variable solo un resutado
+                // me mantiene la variable refrescada
+                const color = this.transformarNumeroAColor(this.secuencia[i]);
+                setTimeout(() => {
+                this.iluminarColor(color)
+                },1000 * i);
+            }
+        }
+
+        iluminarColor(color){
+            //agg el efecto de cambio de color
+            //añadimos la otra clase que colocamos en CSS
+            this.colores[color].classList.add('light');
+            //trabaja con una funcion, y el tiempo que va a durar
+            setTimeout (() => this.apagarColor(color),350);
+        }
+
+        apagarColor(color){
+            this.colores[color].classList.remove('light');
+        }
+
+        agregarEventosClick(){
+            this.colores.celeste.addEventListener('click', this.elegirColor);
+            this.colores.verde.addEventListener('click', this.elegirColor);
+            this.colores.violeta.addEventListener('click', this.elegirColor);
+            this.colores.naranja.addEventListener('click', this.elegirColor);
+        }
+
+        // para escuchar el evento se usa un parametro que se llama ev
+        elegirColor(ev){
+            const nombreColor = ev.target.dataset.color;
+            const numeroColor = this.transformarColorANumero(nombreColor);
+            this.iluminarColor(nombreColor);
+            if(numeroColor === this.secuencia[this.subnivel]){
+              this.subnivel++;
+              if(this.subnivel === this.nivel){
+                this.nivel++;
+                this.EliminarEventosClick();
+                if(this.nivel === (Ultimo_Nivel + 1)){
+                  //Gano
+                  this.ganoElJuego();
+                }else{
+                  //llamar a esta funcion despues de 1.5s
+                  setTimeout(this.siguienteNivel(),1500);
+                }
+              }
+            }else{
+              //perdio
+              this.perdioElJuego();
+            }
+        }
+
+        ganoElJuego(){
+          //para llamar al alert de la libreria que invocamos en el enlace
+          //swal
+          // titulo , mensaje , chulito de realizado
+          swal('Platzi','Felicitaciones Ganaste el Juego!','success')
+          .then(()=>{
+            this.inicializar();
+          });
+        }
+
+        perdioElJuego(){
+          // titulo , mensaje , x de error
+          swal('Platzi','Lo Siento Perdiste el Juego! :(','error')
+          .then(()=>{
+            this.EliminarEventosClick();
+          });
+        }
+
+        EliminarEventosClick(){
+          this.colores.celeste.removeEventListener('click', this.elegirColo);
+          this.colores.verde.removeEventListener('click', this.elegirColo);
+          this.colores.violeta.removeEventListener('click', this.elegirColo);
+          this.colores.naranja.removeEventListener('click', this.elegirColo);
+
+        }
+
+      }
+
+      function empezarJuego() {
+         window.juego = new Juego();
+      }
+    </script>
+  
+
+</body></html>
